@@ -1,0 +1,43 @@
+ {
+    "build_date": "2016-11-30_22:00:00",
+    "description": "a very simple test",
+    "home_url": "Module_kms.asp",
+    "boolean_test1": true,
+    "boolean_test2": false,
+    "error_test": true123,
+    "float_test": -0.123456789,
+    "error_test2":[null33, false,false4],
+
+    "test_json": {
+        "a":1,
+        "b":2,
+        "c":-0.123456789,
+        "d":true,"e":false
+    },
+
+    "test_array": [
+        0,
+        "a",
+        "b",
+        "c",
+        "d",
+        "e"
+    ],
+
+    "test_nested": {
+        "a":1,
+        "b":2,
+        "c":-0.123456789,
+        "d":true,"e":false,
+        "f": {
+            "a":1,
+            "b":2,
+            "c":-0.123456789,
+            "d":true,"e":false,"ano\\ther\ttest":{"1":-0.1,"sqfd1":{}, "sqfd2":[]}
+        }
+    },
+
+    "test_string": "\u0020\"\\/\b\f\n\r\t 中文，Deutsch, English, Español, Français, Italiano, 日本語, Nederlands, Português, Русский, Türkçe, ไทย, tiếng Việt"
+
+    "fatal_error": "fatal_error
+}
