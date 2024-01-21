@@ -134,34 +134,34 @@ __Data structure__
   >>> Type: number; num=123.456000
   ```
 
-  - __*struct json*__
-    `struct json` is the structure that stores an array/collection of `struct json_obj`. It is designed to hide implementation details of how the json object array/collection is stored and managed.
-    the definition is as follows:
+- __*struct json*__
+  `struct json` is the structure that stores an array/collection of `struct json_obj`. It is designed to hide implementation details of how the json object array/collection is stored and managed.
+  the definition is as follows:
+  ```
+  struct json {
+    void *storage;
+    struct _json_op *_op;
+  };
+  ```
+  There are some basic operations exposed to users:
+  - init: initiate the json. you need to use different initiation function for different storage type (e.g. `json_list_storage_init`). (So far only linked-list storage is supported.)
+  - `json_destroy`: destroy everything within json.
+  - `json_add`: add an json_obj into json. memory copy involved.
+  - `_json_add_empty`: add an empty json_obj into json, returns the pointer to the obj. Used in case you wanna avoid memory copy.
+  - `json_remove_by_key`: remove a json_obj by key (char*).
+  - `json_remove_by_key_view`: remove a json_obj by key (str_view_t).
+  - `json_remove_by_index`: remove a json_obj by index.
+  - `json_get_by_key`: get a json_obj by key (char*).
+  - `json_get_by_key_view`: get a json_obj by key (str_view_t).
+  - `json_get_by_index`: get a json_obj by index.
+  - `json_get_size`: return number of elements within json (non-recursive. i.e. nested json counts as one obj.)
+  - `json_begin`, `json_next`, `json_end`: a iterator for user's convenience. To use it:
     ```
-    struct json {
-      void *storage;
-      struct _json_op *_op;
-    };
-    ```
-    There are some basic operations exposed to use:
-    - init: initiate the json. you need to use different initiation function for different storage type (e.g. `json_list_storage_init`). (So fat only linked-list storage is supported.)
-    - `json_destroy`: destroy everything within json.
-    - `json_add`: add an json_obj into json. memory copy involved.
-    - `_json_add_empty`: add an empty json_obj into json, returns the pointer to the obj. Used in case you wanna avoid memory copy.
-    - `json_remove_by_key`: remove a json_obj by key (char*).
-    - `json_remove_by_key_view`: remove a json_obj by key (str_view_t).
-    - `json_remove_by_index`: remove a json_obj by index.
-    - `json_get_by_key`: get a json_obj by key (char*).
-    - `json_get_by_key_view`: get a json_obj by key (str_view_t).
-    - `json_get_by_index`: get a json_obj by index.
-    - `json_get_size`: return number of elements within json (non-recursive. i.e. nested json counts as one obj.)
-    - `json_begin`, `json_next`, `json_end`: a iterator for user's convenience. To use it:
-      ```
-          for (
-          struct json_obj *cur = json_begin (&json_parsed);
-          cur != json_end (&json_parsed);
-          cur = json_next (&json_parsed, cur)
-        ) {
-          ...
-        }
+      for (
+        struct json_obj *cur = json_begin (&json_parsed);
+        cur != json_end (&json_parsed);
+        cur = json_next (&json_parsed, cur)
+      ) {
+        ...
+      }
       ```
