@@ -58,7 +58,7 @@ struct json_obj {
   // CAUTION 2: might do in-place modification of the string,
   // even if they do not own it!
   // CAUTION 3: it does not necessarily means that
-  // the string is used` as a key/value.
+  // the string is used as a key/value.
   char *__source;
   size_t __source_len;
   int type;

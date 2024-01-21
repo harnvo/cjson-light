@@ -253,17 +253,13 @@ json_obj_set_null (struct json_obj *obj) {
 
 __EXPOSED int
 json_obj_set_number (struct json_obj *obj, double number) {
-  obj->type = JSON_TYPE_FLOAT;
-  if (json_obj_owns_source (obj)) {
-    json_global_hooks.free_fn (obj->__source);
-    obj->__source = NULL;
-    obj->__source_len = 0;
-    obj->type &= ~__JSON_OWNS_SOURCE;
-  }
   if (json_obj_has_children (obj)) {
     json_destroy (obj->value.object);
     obj->value.object = NULL;
   }
+
+  __json_obj_check_destroy_value_str (obj);
+  __json_obj_set_type (obj, JSON_TYPE_FLOAT);
 
   
   obj->value.number = number;
@@ -272,17 +268,13 @@ json_obj_set_number (struct json_obj *obj, double number) {
 
 __EXPOSED int
 json_obj_set_boolean (struct json_obj *obj, int boolean) {
-  obj->type = JSON_TYPE_BOOLEAN;
-  if (json_obj_owns_source (obj)) {
-    json_global_hooks.free_fn (obj->__source);
-    obj->__source = NULL;
-    obj->__source_len = 0;
-    obj->type &= ~__JSON_OWNS_SOURCE;
-  }
   if (json_obj_has_children (obj)) {
     json_destroy (obj->value.object);
     obj->value.object = NULL;
   }
+
+  __json_obj_check_destroy_value_str (obj);
+  __json_obj_set_type (obj, JSON_TYPE_BOOLEAN);
 
   obj->value.boolean = boolean>0?1:0;
   return 0;
