@@ -1,6 +1,6 @@
-# [Unfinished] json-c
+# [Unfinished] cjson-light
 
-A lightweight, modular, fast, and easy-to-use JSON libraey in c.
+A lightweight, modular, fast, and easy-to-use JSON library in c.
 
 ## Getting started
 
