@@ -10,6 +10,9 @@ target("src")
         add_defines("_DEBUG")
         add_cxflags("-O0 -g3")
         set_optimize("none")
+    else
+        add_cxflags("-O3")
+        set_optimize("fastest")
     end
 
     add_files("src/str_view.c")

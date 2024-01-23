@@ -328,7 +328,7 @@ __json_parse (struct json *target, const char *source, size_t length, int __cur_
   /* parse the string */
   while (1) {
     struct json_obj new_obj;
-    int offset = __json_obj_parse (&new_obj, source, src_end - source, __cur_depth + 1);
+    int offset = __json_obj_parse (&new_obj, source, src_end - source, __cur_depth);
     if (offset == -1) {
       return -1;
     }

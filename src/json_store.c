@@ -85,6 +85,7 @@ json_list_storage_destroy (struct json *json) {
 
     if (json_obj_owns_source (&node->obj)) {
       debug_print ("free source=%p\n", node->obj.value.str.str);
+      
       json_global_hooks.free_fn (node->obj.__source);
     }
 

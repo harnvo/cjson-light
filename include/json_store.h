@@ -96,14 +96,14 @@ _json_add_empty (struct json *json, str_view_t *key) {
 }
 
 __EXPOSED __HEADER_ONLY int
-json_remove_by_key (struct json *json, const char *key) {
+json_remove (struct json *json, const char *key) {
   // make a str_view_t
   str_view_t _view = { (char*) key, strlen (key) };
   return json->_op->remove_by_key (json, &_view);
 }
 
 __EXPOSED __HEADER_ONLY int
-json_remove_by_key_view (struct json *json, str_view_t *key) {
+json_remove_by_view (struct json *json, str_view_t *key) {
   return json->_op->remove_by_key (json, key);
 }
 
@@ -113,19 +113,19 @@ json_remove_by_index (struct json *json, size_t index) {
 }
 
 __EXPOSED __HEADER_ONLY struct json_obj *
-json_get_by_key (struct json *json, const char *key) {
+json_get (struct json *json, const char *key) {
   // make a str_view_t
   str_view_t _view = { (char*) key, strlen (key) };
   return json->_op->get_by_key (json, &_view);
 }
 
 __EXPOSED __HEADER_ONLY struct json_obj *
-json_get_by_key_view (struct json *json, str_view_t *key) {
-  return json->_op->get_by_key (json, key);
+json_get_by_view (struct json *json, str_view_t key) {
+  return json->_op->get_by_key (json, &key);
 }
 
 __EXPOSED __HEADER_ONLY struct json_obj *
-json_get_by_index (struct json *json, size_t index) {
+json_index (struct json *json, size_t index) {
   return json->_op->get_by_index (json, index);
 }
 
@@ -179,7 +179,7 @@ typedef struct json_list_storage json_list_storage_t;
 
 int json_list_storage_init (struct json *json);
                             
-void json_list_storage_destroy (struct json *json);
+// void json_list_storage_destroy (struct json *json);
 
 #if defined(__cplusplus)
 }
