@@ -99,8 +99,6 @@ __json_obj_print (struct  json_obj *obj, int flag, int __cur_depth) {
   }
 }
 
-
-
 /* --- setters --- */
 /* All string setters with:
  * 1. const char *str input would try to make a copy of the string.
