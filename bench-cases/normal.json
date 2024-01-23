@@ -1,0 +1,21 @@
+{
+    "key1": "value1",
+    "key2": "value2",
+    "key_arr":[
+        1.2,33,4,{"a":"b"},[1,2,3],{"a":"b","c":"d"},
+        {"build_date": "2016-11-30_22:00:00",
+        "description": "a very simple test",
+        "home_url": "Module_kms.asp"}
+    ],
+    "key_arr2":[1,2,3],
+    "key_arr3":[],
+
+    "key_obj":{
+        "nested_key1":"nested_value1"
+    },
+    "key_obj2":{"a":"b","c":"d"},
+    "key_obj3":{},
+
+    "key":true
+
+}
