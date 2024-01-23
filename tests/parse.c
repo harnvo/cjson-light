@@ -34,7 +34,7 @@ __recursive_test (const struct json *json, obj_assertion_t ass_fx, int ass_shoul
 static void 
 test_json_parse (const char *src) {
   struct json json1;
-  json_list_storage_init (&json1, NULL);
+  json_list_storage_init (&json1);
   int ret = json_parse (&json1, src, strlen (src));
   if (ret == -1) {
     test_fail ("could not parse");
@@ -51,12 +51,13 @@ test_json_parse (const char *src) {
 	}
 
 fail:
+  printf("cleaning...\n");
 	json_destroy(&json1);
 }
 
 int main () {
   // open file
-  FILE *fp = fopen ("/home/zichuan/json-c/test-cases/test1.json", "r");
+  FILE *fp = fopen ("../test-cases/test1.json", "r");
 	if (fp == NULL) {
 		printf ("error\n");
 		return -1;

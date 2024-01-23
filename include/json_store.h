@@ -9,13 +9,13 @@
 
 // define storage place for json_obj
 
-#ifdef __cplusplus
+#if defined(__cplusplus)
 extern "C" {
 #endif
 
 struct _json_op {
-  // int (*add) (struct json *json, struct json_obj *obj);
-  struct json_obj *(*_add_empty) (struct json *json);
+  int (*add) (struct json *json, struct json_obj *obj);
+  struct json_obj *(*_add_empty) (struct json *json, str_view_t *key);
   // int (*remove) (struct json *json, struct json_obj *obj);
   int (*remove_by_key) (struct json *json, str_view_t *key);
   int (*remove_by_index) (struct json *json, size_t index);
@@ -40,27 +40,59 @@ struct _json_op {
   void (*__remove_by_obj) (struct json *json, struct json_obj *obj);
 };
 
-struct json {
-  void *storage;
-  // size_t size;
+struct json_list_storage;
+struct json_hash_table_storage;
+struct json_array_storage;
 
+struct json;
+
+/* ---------------------- */
+/* - storage definition - */
+/* ---------------------- */
+struct json_list_storage_node;
+typedef struct json_list_storage {
+  struct json_list_storage_node *head;
+  struct json_list_storage_node *tail;
+  size_t size;
+
+} json_list_storage_t;
+
+typedef struct json_array_storage {
+  struct json_obj *objs;
+  size_t size;
+  size_t capacity;
+} json_array_storage_t;
+
+struct json_hash_table_bucket;
+typedef struct json_hash_table_storage {
+  int num_buckets; // bucket is not gonna be that big, right..?
+  size_t num_elements;
+
+
+  struct json_hash_table_bucket *buckets;
+
+  // an internal context holder for iterator
+  int __cur_bucket;
+  // struct json_obj *__cur_obj;
+} json_hash_table_storage_t;
+
+struct json {
   struct _json_op *_op;
+  union {
+    struct json_list_storage list;
+    struct json_hash_table_storage hash_table;
+    struct json_array_storage array;
+  } _storage;
 };
 
 __EXPOSED __HEADER_ONLY int
 json_add (struct json *json, struct json_obj *obj) {
-  struct json_obj *new_obj = json->_op->_add_empty (json);
-  if (!new_obj) {
-    return -1;
-  }
-
-  memcpy (new_obj, obj, sizeof (struct json_obj));
-  return 0;
+  return json->_op->add(json, obj);
 }
 
 __EXPOSED __HEADER_ONLY struct json_obj *
-_json_add_empty (struct json *json) {
-  return json->_op->_add_empty (json);
+_json_add_empty (struct json *json, str_view_t *key) {
+  return json->_op->_add_empty (json, key);
 }
 
 __EXPOSED __HEADER_ONLY int
@@ -145,7 +177,10 @@ json_print (const struct json *json, int flags) {
 /* --- list storage --- */
 typedef struct json_list_storage json_list_storage_t;
 
-int json_list_storage_init (struct json *json,
-                            json_list_storage_t *storage);
+int json_list_storage_init (struct json *json);
                             
 void json_list_storage_destroy (struct json *json);
+
+#if defined(__cplusplus)
+}
+#endif

@@ -39,5 +39,10 @@
 
     "test_string": "\u0020\"\\/\b\f\n\r\t 中文，Deutsch, English, Español, Français, Italiano, 日本語, Nederlands, Português, Русский, Türkçe, ไทย, tiếng Việt"
 
-    "fatal_error": "fatal_error
+    "fatal_error": "fatal_error should stop parsing!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+    
 }

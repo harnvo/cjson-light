@@ -2,6 +2,7 @@ add_rules("mode.debug", "mode.release" )
 
 
 target("src")
+    set_languages("c99")
     set_kind("shared")
     add_includedirs("include")
     -- set up debug keywords

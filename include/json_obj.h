@@ -488,8 +488,6 @@ json_obj_tostr (struct json_obj *obj, char **dst, size_t *dst_len) {
   return 0;
 }
 
-
-
 #if defined(__cplusplus)
 }
 #endif

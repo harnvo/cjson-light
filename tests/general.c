@@ -35,6 +35,11 @@ int main (void) {
     str_view_t sv2 = json_obj_get_value_str (obj);
     printf ("sv2.str=%v\n", sv2);
 
+    // setting number
+    json_obj_set_number (obj, 123.456);
+    double num = json_obj_get_value_number (obj);
+    printf ("Type: %s; num=%f\n", json_obj_get_type (obj), num);
+
 
     // open file
     // get reletive path
@@ -57,7 +62,7 @@ int main (void) {
 
     // parse the json
     struct json json_parsed;
-    json_list_storage_init (&json_parsed, NULL);
+    json_list_storage_init (&json_parsed);
     int ret = json_parse (&json_parsed, source, length);
     // if (ret == -1) {
     //     printf ("error\n");
@@ -101,9 +106,11 @@ int main (void) {
     printf("[type:3]: %s\n", json_obj_get_type (obj1));
 
 clean1:
+    printf("--------------------\n");
+    printf("cleaning...\n");
+    printf("--------------------\n");
+    free (test_str);
     json_destroy (&json_parsed);
-
-
     json_obj_destroy (obj);
     free (obj);
 

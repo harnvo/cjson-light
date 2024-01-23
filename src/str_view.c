@@ -20,10 +20,6 @@ _str_view_arginfo(const struct printf_info *info, size_t n, int *argtypes) {
 }
 
 #if defined(__GNUC__) || defined(__clang__)
-#define HAS_CONSTRUCTOR_ATTRIBUTE
-#endif
-
-#ifdef HAS_CONSTRUCTOR_ATTRIBUTE
 __attribute__ ((constructor)) void
 str_view_printf_init(void) {
     register_printf_function('v', _str_view_printf, _str_view_arginfo);

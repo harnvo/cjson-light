@@ -1,19 +1,10 @@
 #pragma once
 
-// #include "shared.h"
+#include "shared.h"
 
-// typedef struct {
-//   const char *source; // never the owner
-//   size_t cur_depth;
-
-//   size_t offset;
-//   size_t length;
-
-//   struct json *target;
-
-// } json_parser;
-
-// __HEADER_ONLY json_parser *json_parser_new ();
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 struct json;
 struct json_obj;
@@ -22,12 +13,15 @@ struct json_obj;
 __EXPOSED __HEADER_ONLY int
 json_parse (struct json *target, const char *source, size_t length);
 
+__EXPOSED
 int __json_parse (struct json *target, const char *source, size_t length, int __cur_depth);
   
 /* a recursive parser for array */
+__EXPOSED
 int __json_arr_parse (struct json *target, const char *source, size_t length, int __cur_depth);
 
 /* a recursive parser for object */
+__EXPOSED
 int __json_obj_parse (struct json_obj *target, const char *source, size_t length, int __cur_depth);
 
 __EXPOSED __HEADER_ONLY int
@@ -43,4 +37,8 @@ json_parse (struct json *target, const char *source, size_t length) {
     return -1;
   }
 }
+
+#if defined(__cplusplus)
+}
+#endif
   

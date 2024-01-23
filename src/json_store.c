@@ -12,50 +12,29 @@ typedef struct json_list_storage_node {
   struct json_list_storage_node *prev;
 } json_list_storage_node_t;
 
-typedef struct json_list_storage {
-  struct json_list_storage_node *head;
-  struct json_list_storage_node *tail;
-  size_t size;
-
-} json_list_storage_t;
-
-int json_list_storage_init (struct json *json, json_list_storage_t *storage);
+int json_list_storage_init (struct json *json);
 
 void json_list_storage_destroy (struct json *json);
 
-__HIDDEN
 int json_list_storage_add (struct json *json, struct json_obj *obj);
+struct json_obj *json_list_storage_add_empty (struct json *json, str_view_t *__key);
 
-__HIDDEN
-struct json_obj *json_list_storage_add_empty (struct json *json);
-
-__HIDDEN
 int json_list_storage_remove_by_key (struct json *json, str_view_t *key);
-
-__HIDDEN
 int json_list_storage_remove_by_index (struct json *json, size_t index);
 
-__HIDDEN
 struct json_obj *json_list_storage_get_by_key (struct json *json, str_view_t *key);
-
-__HIDDEN
 struct json_obj *json_list_storage_get_by_index (struct json *json, size_t index);
 
-__HIDDEN
 size_t json_list_storage_size (const struct json *json);
 
-__HIDDEN
 struct json_obj *json_list_storage_begin (const struct json *json);
-
-__HIDDEN
 struct json_obj *json_list_storage_next (const struct json *json, struct json_obj *obj);
-
-__HIDDEN
 struct json_obj *json_list_storage_end (const struct json *json);
 
 /* ------------------------ */
 
 struct _json_op json_op_list_storage = {
+  .add = json_list_storage_add,
   ._add_empty = json_list_storage_add_empty,
   .remove_by_key = json_list_storage_remove_by_key,
   .remove_by_index = json_list_storage_remove_by_index,
@@ -73,31 +52,20 @@ struct _json_op json_op_list_storage = {
 /* --- init&destory --- */
 
 int
-json_list_storage_init (struct json *json, json_list_storage_t *storage) {
-  if (storage) {
-    json->storage = storage;
-  } else {
-    json->storage = json_global_hooks.malloc_fn (sizeof (json_list_storage_t));
-    if (!json->storage) {
-      return -1;
-    }
-    storage = (json_list_storage_t *)json->storage;
-  }
+json_list_storage_init (struct json *json) {
+  json_list_storage_t *storage = (json_list_storage_t *) &json->_storage.list;
 
   storage->head = NULL;
   storage->tail = NULL;
   storage->size = 0;
 
-  json->storage = storage;
-
   json->_op = &json_op_list_storage;
-
   return 0;
 }
 
 void
 json_list_storage_destroy (struct json *json) {
-  json_list_storage_t *storage = (json_list_storage_t *)json->storage;
+  json_list_storage_t *storage = &json->_storage.list;
   json_list_storage_node_t *node = storage->head;
   json_list_storage_node_t *next_node = NULL;
 
@@ -109,8 +77,7 @@ json_list_storage_destroy (struct json *json) {
     if (!json_obj_is_array_element (&node->obj)) {
       debug_print ("json_key=%.*s\n", (int) node->obj.key.len, node->obj.key.str);
     }
-    if (node->obj.type == JSON_TYPE_OBJECT
-        || node->obj.type == JSON_TYPE_ARRAY) {    
+    if (json_obj_has_children (&node->obj)) {    
       debug_print ("destroy nested json%s.\n", "");
       json_destroy (node->obj.value.object);
       json_global_hooks.free_fn (node->obj.value.object);
@@ -127,11 +94,7 @@ json_list_storage_destroy (struct json *json) {
     node = next_node;
   }
 
-  
-
-  // TODO: what if storage is not allocated by malloc?
-  json_global_hooks.free_fn (storage);
-  json->storage = NULL;
+  *storage = (json_list_storage_t) {0};
 
   return;
 }
@@ -140,7 +103,7 @@ json_list_storage_destroy (struct json *json) {
 
 __HIDDEN int
 json_list_storage_add (struct json *json, struct json_obj *obj) {
-  json_list_storage_t *storage = (json_list_storage_t *)json->storage;
+  json_list_storage_t *storage = &json->_storage.list;
   json_list_storage_node_t *new_node
       = (json_list_storage_node_t *)json_global_hooks.malloc_fn (
           sizeof (json_list_storage_node_t));
@@ -156,19 +119,19 @@ json_list_storage_add (struct json *json, struct json_obj *obj) {
     storage->head = new_node;
     storage->tail = new_node;
     storage->size = 1;
+  } else {
+    storage->tail->next = new_node;
+    new_node->prev = storage->tail;
+    storage->tail = new_node;
+    storage->size++;
   }
-
-  storage->tail->next = new_node;
-  new_node->prev = storage->tail;
-  storage->tail = new_node;
-  storage->size++;
 
   return 0;
 }
 
 __HIDDEN struct json_obj *
-json_list_storage_add_empty (struct json *json) {
-  json_list_storage_t *storage = (json_list_storage_t *)json->storage;
+json_list_storage_add_empty (struct json *json, str_view_t *__key) {
+  json_list_storage_t *storage = &json->_storage.list;
   json_list_storage_node_t *new_node
       = (json_list_storage_node_t *)json_global_hooks.malloc_fn (
           sizeof (json_list_storage_node_t));
@@ -183,12 +146,12 @@ json_list_storage_add_empty (struct json *json) {
     storage->head = new_node;
     storage->tail = new_node;
     storage->size = 1;
+  } else {
+    storage->tail->next = new_node;
+    new_node->prev = storage->tail;
+    storage->tail = new_node;
+    storage->size++;
   }
-
-  storage->tail->next = new_node;
-  new_node->prev = storage->tail;
-  storage->tail = new_node;
-  storage->size++;
 
   return &new_node->obj;
 
@@ -196,7 +159,7 @@ json_list_storage_add_empty (struct json *json) {
 
 __HIDDEN int
 json_list_storage_remove_by_key (struct json *json, str_view_t *key) {
-  json_list_storage_t *storage = (json_list_storage_t *)json->storage;
+  json_list_storage_t *storage = &json->_storage.list;
   json_list_storage_node_t *node = storage->head;
 
   while (node) {
@@ -230,7 +193,7 @@ json_list_storage_remove_by_key (struct json *json, str_view_t *key) {
 
 __HIDDEN int
 json_list_storage_remove_by_index (struct json *json, size_t index) {
-  json_list_storage_t *storage = (json_list_storage_t *)json->storage;
+  json_list_storage_t *storage = &json->_storage.list;
   json_list_storage_node_t *node = storage->head;
 
   while (node) {
@@ -256,7 +219,7 @@ json_list_storage_remove_by_index (struct json *json, size_t index) {
 
 __HIDDEN struct json_obj *
 json_list_storage_get_by_key (struct json *json, str_view_t *key) {
-  json_list_storage_t *storage = (json_list_storage_t *)json->storage;
+  json_list_storage_t *storage = &json->_storage.list;
   json_list_storage_node_t *node = storage->head;
 
   while (node) {
@@ -275,7 +238,7 @@ json_list_storage_get_by_key (struct json *json, str_view_t *key) {
 
 __HIDDEN struct json_obj *
 json_list_storage_get_by_index (struct json *json, size_t index) {
-  json_list_storage_t *storage = (json_list_storage_t *)json->storage;
+  json_list_storage_t *storage = &json->_storage.list;
   json_list_storage_node_t *node = storage->head;
 
   while (node) {
@@ -292,14 +255,14 @@ json_list_storage_get_by_index (struct json *json, size_t index) {
 
 __HIDDEN size_t
 json_list_storage_size (const struct json *json) {
-  json_list_storage_t *storage = (json_list_storage_t *)json->storage;
+  json_list_storage_t *storage = &json->_storage.list;
   return storage->size;
 }
 
 /* an internal iterator */
 __HIDDEN json_list_storage_node_t *
 __json_list_storage_begin (const struct json *json) {
-  json_list_storage_t *storage = (json_list_storage_t *)json->storage;
+  json_list_storage_t *storage = &json->_storage.list;
   return storage->head;
 }
 
@@ -316,13 +279,20 @@ __json_list_storage_end (const struct json *json) {
 /* iterator exposed to _json_op */
 __HIDDEN struct json_obj *
 json_list_storage_begin (const struct json *json) {
-  json_list_storage_t *storage = (json_list_storage_t *)json->storage;
+  json_list_storage_t *storage = &json->_storage.list;
+  if (storage->size == 1) {
+    debug_assert (storage->head == storage->tail);
+    debug_assert (storage->head->next == NULL);
+    printf ("[json_list_storage_begin] size=1\n");
+  }
+
+
   return &storage->head->obj;
 }
 
 __HIDDEN struct json_obj *
 json_list_storage_next (const struct json *json, struct json_obj *obj) {
-  json_list_storage_t *storage = (json_list_storage_t *)json->storage;
+  json_list_storage_t *storage = &json->_storage.list;
   json_list_storage_node_t *node;
 
 #ifdef __DEBUG
@@ -345,11 +315,19 @@ check_passed:
   // Not sure if this is a good idea, but it works anyway :)
 
   node = (json_list_storage_node_t *)obj;
+  if (node == storage->tail) {
+    //
+    if (node->next) {
+      perror ("error: next node is not NULL\n");
+    }
+
+    return json_list_storage_end (json);
+  }
+
   node = node->next;
   if (!node) {
     return json_list_storage_end (json);
   }
-
   return &node->obj;
 }
 
@@ -357,6 +335,51 @@ __HIDDEN struct json_obj *
 json_list_storage_end (const struct json *json) {
   return NULL;
 }
+
+/* ----------------------- */
+/* ---- array storage ---- */
+/* ----------------------- */
+
+/* ------------------------ */
+/* -- hash table storage -- */
+/* ------------------------ */
+
+struct json_hash_table_bucket {
+  struct json_obj *objs;
+  int num_elements;
+  int capacity;
+}; 
+
+
+/* iterator exposed to _json_op */
+__HIDDEN struct json_obj *
+json_hash_table_storage_next (const struct json *json, struct json_obj *obj) {
+  json_hash_table_storage_t *storage = &json->_storage.list;
+
+  // find the bucket
+  struct json_hash_table_bucket *bucket = NULL;
+  *bucket = storage->buckets[storage->__cur_bucket];
+
+  // check if it is the last element in the bucket
+  if (bucket->objs + bucket->num_elements == obj) {
+    // find the next bucket
+    storage->__cur_bucket++;
+    while (storage->__cur_bucket < storage->num_buckets) {
+      if (storage->buckets->num_elements > 0) {
+        return & (storage->buckets[storage->__cur_bucket].objs[0]);
+      }
+      storage->__cur_bucket++;
+    }
+
+    // no more elements, reset the iterator
+    storage->__cur_bucket = 0;
+    return NULL;
+  }
+
+  // find the next element in the bucket
+  return obj + 1;
+}
+
 
 /* ------------------- */
 /* --- rbt storage --- */
@@ -381,7 +404,7 @@ typedef struct json_vector_storage<json_allocator<struct json_obj *> >
 
 __HEADER_ONLY int
 json_vector_storage_add (struct json *json, struct json_obj *obj) {
-  json_vector_storage_t *storage = (json_vector_storage_t *)json->storage;
+  json_vector_storage_t *storage = (json_vector_storage_t *)json->_storage.list;
   storage->vec->push_back (obj);
   return 0;
 }

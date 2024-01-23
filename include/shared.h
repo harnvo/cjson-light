@@ -16,9 +16,9 @@
 
 // macro for visibility
 #if ( (defined(__GNUC__) &&__GNUC__>=4 ) || defined(__SUNPRO_CC) || defined(__SUNPRO_C))
-// #define __HIDDEN __attribute__ ((visibility ("hidden")))
-// #define __EXPOSED __attribute__ ((visibility ("default")))
-// #else
+#define __HIDDEN __attribute__ ((visibility ("hidden")))
+#define __EXPOSED __attribute__ ((visibility ("default")))
+#else
 #define __HIDDEN
 #define __EXPOSED
 #endif
@@ -74,6 +74,11 @@
 #define unlikely(x) __builtin_expect(!!(x), 0)
 #define likely(x) __builtin_expect(!!(x), 1)
 
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 // some global hooks
 // need to used with lock
 
@@ -123,8 +128,6 @@ typedef void *(*json_malloc_t) (size_t);
 typedef void (*json_free_t) (void *);
 
 static int json_default_malloc = 1;
-// json_malloc_t json_malloc = malloc;
-// json_free_t json_free = free;
 
 struct global_hooks {
   json_malloc_t malloc_fn;
@@ -137,9 +140,12 @@ static json_global_hooks = {malloc, free};
   do {                                                                         \
     json_global_hooks.malloc_fn = malloc_fx;                                  \
     json_global_hooks.free_fn = free_fx;                                      \
+    json_default_malloc = 0;                                                   \
   } while (0)
 
-
+#if defined(__cplusplus)
+}
+#endif
 
 // allocator for cpp
 #if defined(__cplusplus)

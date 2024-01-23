@@ -1,0 +1,49 @@
+{
+    "deep_nested": {
+        "one":{"two":{"three":{"four":[1,2,3,4,5,6,7,8,9,0]}}},
+        "one1":{"two1":{"three1":{"four1":[1,2,3,4,5,6,7,8,9,0]}}},
+        "oh":{
+            "my":{"god":{"what":{"is":{"this":{"i":{"dont":
+        {"even":{"know":{"what":{"i":{"am":{"doing":{"anymore":
+        {"i":{"am":{"so":{"deep":{"in":{"this":{"json":{"thing":
+        {"that":{"i":{"dont":{"even":{"know":{"what":{"i":{"am":
+        {"doing":{"anymore":{"i":{"am":{"so":{"deep":{"in":{"this":
+        {"json":{"thing":{"that":{"i":{"dont":{"even":{"know":{"what":
+        {"i":{"am":{"doing":{"anymore":{"i":{"am":{"so":{"deep":{"in":{
+        "this":{"json":{"thing":{"that":{"i":{"dont":{"even":{"know":
+        {"what":{"i":{"am":{"doing":{"anymore":{"i":{"am":{"so":{"deep":
+        {"in":{"this":{"json":{"thing":{"that":{"i":{"dont":{"even":{"know":
+        {"what":{"i":{"am":{"doing":{"anymore":{"i":{"am":{"so":{"deep":{"in":
+        {"this":{"json":{"thing":{"that":{"i":{"dont":{"even":{"know":{"what":
+        {"i":{"am":{"doing":{"anymore":{"i":{"am":{"so":{"deep":{"in":{"this":
+        {"json":{"thing":{"that":{"i":{"dont":{"even":{"know":{"what":{"i":{"am":
+        {"doing":{"anymore":{"i":{"am":{"so":{"deep":{"in":{"this":{"json":{"thing":
+        {"that":{"i":{"dont":{"even":{"know":{"what":{"i":{"am":{"doing":{"anymore":
+        {"i":{"am":{"so":{"deep":{"in":{"this":{"json":{"thing":{"that":{"i":{"dont":
+        {"even":{"know":{"what":{"i":{"am":{"doing":{"anymore":{"i":{"am":{"so":{"deep":
+        {"in":{"this":{"json":{"thing":{"that":{"i":{"dont":{"even":{"know":{"what":{"i":
+        {"am":{"doing":{"anymore":{"i":{"am":{"so":{"deep":{"in":{"this":{"json":{"thing":
+        {"that":{"i":{"dont":{"even":{"know":{"what":{"i":{"am":{"doing":{"anymore":{"i":
+        {"am":{"so":{"deep":{"in":{"this":{"json":{"thing":{"that":{"i":{"dont":{"even":
+        {"know":{"what":{"i":{"am":{"doing":{"anymore":{"i":{"am":{"so":{"deep":{"in":
+        {"this":{"json":{"thing":{"that":{"i":{"dont":{"even":{"know":{"what":{"i":
+        {"am":{"doing":{"anymore":{"i":{"am":{"so":{"deep":{"in":{"this":{"json":
+        {"thing":{"that":{"i":{"dont":{"even":{"know":{"what":{"i":{"am":{"doing":
+        {"anymore":{"i":{"am":{"so":{"deep":{"in":{"this":{"json":{"thing":{"that":
+        {"i":{"dont":{"even":{"know":{"what":{"i":{"am":{"doing":{"anymore":{"i":
+        {"am":{"so":{"deep":{"in":{"this":{"json":{"thing":{"that":{"i":{"dont":
+        {"even":{"know":{"what":{"i":{"am":{"doing":{"anymore":{"i":{"am":{"so":
+        {"deep":{"in":{"this":{"json":{"thing":{"that":{"i":{"dont":{"even":{"know":
+        {"what":{"i":{"am":{"doing":{"anymore":{"i":{"am":{"so":{"deep":{"in":{"this":{"json":{"thing":
+        {"that":{"i":{"dont":{"even":{"know":{"what":{"i":{"am":{"doing":{"anymore":{"i":{"am":{"so":
+        {"deep":{"in":{"this":{"json":{"thing":{"that":{"i":{"dont":{"even":{"know":{"what":{"i":{"am":
+        {"doing":{"anymore":{"i":{"am":{"so":{"deep":{"in":{"this":{"json":{"thing":{"that":{"i":{"dont":
+        {"even":{"know":{"what":{"i":{"am":{"doing":{"anymore":{"i":{"am":{"so":{"deep":{"in":{"this":{"json":
+        {"thing":{"that":{"i":{"dont":{"even":{"know":{"what":{"i":{"am":{"doing":{"anymore":{"i":{"am":{"so":
+        {"deep":{"in":{"this":{"json":{"thing":{"that":{"i":{"dont":{"even":{"know":{"what":{"i":{"am":{"doing":
+        {"anymore":"!!!"}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
+        }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
+    },
+        "oh you parsed it!": "congratulations!"
+    }
+}

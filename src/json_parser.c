@@ -3,16 +3,22 @@
 #include "json_store.h"
 #include "json_parser.h"
 
-#define __JSON_MAX_DEPTH 100
+#define __JSON_MAX_DEPTH 128
 
 int
 json_value_parse (struct json_obj *target, const char *source, size_t length, int __cur_depth) {
   if (source == NULL || length == 0) {
-    raise_error ("error parsing json object: invalid source. stop here:%s\n", source);
+    char src_trunc[33];
+    strncpy(src_trunc, source, 32);
+    src_trunc[32] = '\0';
+    raise_error ("error parsing json object: invalid source. stop here:%s\n", src_trunc);
     return -1;
   }
   if (__cur_depth > __JSON_MAX_DEPTH) {
-    raise_error ("error parsing json object: too deep. stop here:%s\n", source);
+    char src_trunc[33];
+    strncpy(src_trunc, source, 32);
+    src_trunc[32] = '\0';
+    raise_error ("error parsing json object: too deep. stop here:%s\n", src_trunc);
     return -1;
   }
 
@@ -41,7 +47,10 @@ json_value_parse (struct json_obj *target, const char *source, size_t length, in
       }
       while (*source != ',' && *source != '}' && *source != ']' && *source != '\0' && source < src_end) {
         if (*source == '\"') {
-          fprintf(stderr, "fatal: unmatched quote. stop here:%s\n", source);
+          char src_trunc[33];
+          strncpy(src_trunc, source, 32);
+          src_trunc[32] = '\0';
+          fprintf(stderr, "fatal: unmatched quote. stop here:%s\n", src_trunc);
           return -1;
         }
         source++;
@@ -67,7 +76,10 @@ json_value_parse (struct json_obj *target, const char *source, size_t length, in
       // find the next comma
       while (*source != ',' && *source != '}' && *source != '\0' && source < src_end) {
         if (*source == '\"') {
-          fprintf(stderr, "fatal: unmatched quote. stop here:%s\n", source);
+          char src_trunc[33];
+          strncpy(src_trunc, source, 32);
+          src_trunc[32] = '\0';
+          fprintf(stderr, "fatal: unmatched quote. stop here:%s\n", src_trunc);
           return -1;
         }
         source++;
@@ -92,7 +104,10 @@ json_value_parse (struct json_obj *target, const char *source, size_t length, in
       }
       while (*source != ',' && *source != '}' && *source != '\0' && source < src_end) {
         if (*source == '\"') {
-          fprintf(stderr, "fatal: unmatched quote. stop here:%s\n", source);
+          char src_trunc[33];
+          strncpy(src_trunc, source, 32);
+          src_trunc[32] = '\0';
+          fprintf(stderr, "fatal: unmatched quote. stop here:%s\n", src_trunc);
           return -1;
         }
         source++;
@@ -107,10 +122,13 @@ json_value_parse (struct json_obj *target, const char *source, size_t length, in
       // object
       struct json *new_json = (struct json *)json_global_hooks.malloc_fn (sizeof (struct json));
       // choose the storage type
-      json_list_storage_init(new_json, NULL);
+      json_list_storage_init(new_json);
       int ret = __json_parse (new_json, source, src_end - source, __cur_depth + 1);
       if (ret == -1) {
-        raise_error ("error parsing json object. stop here:%s\n", source);
+        char src_trunc[33];
+        strncpy(src_trunc, source, 32);
+        src_trunc[32] = '\0';
+        raise_error ("error parsing json object. stop here:%s\n", src_trunc);
         return -1;
       }
 
@@ -121,7 +139,10 @@ json_value_parse (struct json_obj *target, const char *source, size_t length, in
       // skip the right brace
       source = strskip (source, src_end - source);
       if (*source != '}') {
-        raise_error ("error parsing json object: unmatched bracket. stop here:%s\n", source);
+        char src_trunc[33];
+        strncpy(src_trunc, source, 32);
+        src_trunc[32] = '\0';
+        raise_error ("error parsing json object: unmatched bracket. stop here:%s\n", src_trunc);
         return -1;
       }
       source++;
@@ -131,7 +152,7 @@ json_value_parse (struct json_obj *target, const char *source, size_t length, in
     case '[': {
       // array
       struct json *new_json = (struct json *)json_global_hooks.malloc_fn (sizeof (struct json));
-      json_list_storage_init(new_json, NULL);
+      json_list_storage_init(new_json);
       int ret = __json_arr_parse (new_json, source, src_end - source, __cur_depth + 1);
       if (ret == -1) {
         // no more warnings, we already have the error message
@@ -145,7 +166,10 @@ json_value_parse (struct json_obj *target, const char *source, size_t length, in
       // skip the right brace
       source = strskip (source, src_end - source);
       if (*source != ']') {
-        raise_error ("error parsing json array: unmatched bracket. stop here:%s\n", source);
+        char src_trunc[33];
+        strncpy(src_trunc, source, 32);
+        src_trunc[32] = '\0';
+        raise_error ("error parsing json array: unmatched bracket. stop here:%s\n", src_trunc);
         return -1;
       }
       source++;
@@ -158,7 +182,10 @@ json_value_parse (struct json_obj *target, const char *source, size_t length, in
       str_view_init (&value, source, src_end - source);
       int ret = str_view_parse_str (&value, value);
       if (ret == -1) {
-        raise_error ("error parsing json string. stop here:%s\n", source);
+        char src_trunc[33];
+        strncpy(src_trunc, source, 32);
+        src_trunc[32] = '\0';
+        raise_error ("error parsing json string. stop here:%s\n", src_trunc);
         return -1;
       }
       target->value.str = value;
@@ -182,7 +209,10 @@ json_value_parse (struct json_obj *target, const char *source, size_t length, in
     }
   }
 
-  printf ("error parsing json value. stop here:%s\n", source);
+  char src_trunc[33];
+  strncpy(src_trunc, source, 32);
+  src_trunc[32] = '\0';
+  printf ("error parsing json value. stop here:%s\n", src_trunc);
   return -1;
 }
 
@@ -221,7 +251,10 @@ __json_obj_parse (struct json_obj *target, const char *source, size_t length, in
   str_view_init (&key, source, src_end - source);
   int flag = str_view_parse_str (&key, key);
   if (flag == -1) {
-    raise_error ("error parsing json object: invalid key. stop here:%s\n", source);
+    char src_trunc[33];
+    strncpy(src_trunc, source, 32);
+    src_trunc[32] = '\0';
+    raise_error ("error parsing json object: invalid key. stop here:%s\n", src_trunc);
     return -1;
   }
 
@@ -231,7 +264,10 @@ __json_obj_parse (struct json_obj *target, const char *source, size_t length, in
   /* skip the string */
   source = strskip (source, src_end - source);
   if (*source != ':') {
-    raise_error ("error parsing json object: missing colon. stop here:%s\n", source);
+    char src_trunc[33];
+    strncpy(src_trunc, source, 32);
+    src_trunc[32] = '\0';
+    raise_error ("error parsing json object: missing colon. stop here:%s\n", src_trunc);
     return -1;
   }
   source++;
@@ -239,7 +275,10 @@ __json_obj_parse (struct json_obj *target, const char *source, size_t length, in
   /* skip the colon */
   source = strskip (source, src_end - source);
   if (*source == '\0') {
-    raise_error ("error parsing json object: unexpected end. stop here:%s\n", source);
+    char src_trunc[33];
+    strncpy(src_trunc, source, 32);
+    src_trunc[32] = '\0';
+    raise_error ("error parsing json object: unexpected end. stop here:%s\n", src_trunc);
     return -1;
   }
 
@@ -271,7 +310,10 @@ __json_parse (struct json *target, const char *source, size_t length, int __cur_
   if ( unlikely(*source != '{') ) {
     // maybe you mean to parse json array?
     if (*source == '[') {
-      raise_error ("trying to parse json object, but found json array. stop here:%s\n", source);
+      char src_trunc[33];
+      strncpy(src_trunc, source, 32);
+      src_trunc[32] = '\0';
+      raise_error ("trying to parse json object, but found json array. stop here:%s\n", src_trunc);
     }
     return -1;
   }
@@ -322,7 +364,10 @@ __json_arr_parse (struct json *target, const char *source, size_t length, int __
   
   char *src_end = (char*) source + length;
   if ( unlikely(*source != '[') ) {
-    raise_error ("error parsing json array: unmatched bracket. stop here:%s\n", source);
+    char src_trunc[33];
+    strncpy(src_trunc, source, 32);
+    src_trunc[32] = '\0';
+    raise_error ("error parsing json array: unmatched bracket. stop here:%s\n", src_trunc);
     return -1;
   }
   source++;
@@ -341,9 +386,12 @@ __json_arr_parse (struct json *target, const char *source, size_t length, int __
     // skip
     source = strskip (source, src_end - source);
 
-    int offset = json_value_parse (&new_obj, source, src_end - source, __cur_depth + 1);
+    int offset = json_value_parse (&new_obj, source, src_end - source, __cur_depth);
     if (offset == -1) {
-      raise_error ("error parsing json array. stop here:%s\n", source);
+      char src_trunc[33];
+      strncpy(src_trunc, source, 32);
+      src_trunc[32] = '\0';
+      raise_error ("error parsing json array. stop here:%s\n", src_trunc);
       return -1;
     }
     source += offset;
