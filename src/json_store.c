@@ -166,7 +166,7 @@ json_list_storage_remove_by_key (struct json *json, str_view_t *key) {
   while (node) {
     // warning: not a good one. need to be rewritten to support
     // case-insensitive json key
-    if (str_view_cmp (&node->obj.key, key) != 0) {
+    if (str_view_cmp (node->obj.key, *key) != 0) {
       node = node->next;
       continue;
     }
@@ -226,7 +226,7 @@ json_list_storage_get_by_key (struct json *json, str_view_t *key) {
   while (node) {
     // warning: not a good one. need to be rewritten to support
     // case-insensitive json key
-    if (str_view_cmp (&node->obj.key, key) != 0) {
+    if (str_view_cmp (node->obj.key, *key) != 0) {
       node = node->next;
       continue;
     }
@@ -316,15 +316,6 @@ check_passed:
   // Not sure if this is a good idea, but it works anyway :)
 
   node = (json_list_storage_node_t *)obj;
-  if (node == storage->tail) {
-    //
-    if (node->next) {
-      perror ("error: next node is not NULL\n");
-    }
-
-    return json_list_storage_end (json);
-  }
-
   node = node->next;
   if (!node) {
     return json_list_storage_end (json);

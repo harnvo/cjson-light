@@ -2,7 +2,7 @@ add_rules("mode.debug", "mode.release" )
 
 
 target("src")
-    set_languages("c99")
+    set_languages("c11")
     set_kind("shared")
     add_includedirs("include")
     -- set up debug keywords
@@ -10,6 +10,11 @@ target("src")
         add_defines("_DEBUG")
         add_cxflags("-O0 -g3")
         set_optimize("none")
+        -- set sanitize address
+        if is_plat("linux") then
+            add_cxflags("-fsanitize=address")
+            add_ldflags("-fsanitize=address")
+        end
     else
         add_cxflags("-O3")
         set_optimize("fastest")

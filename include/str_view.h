@@ -132,17 +132,17 @@ int str_view_substr (struct str_view *src, struct str_view *dst, size_t start,
 
 // compare. i for case insensitive
 __HEADER_ONLY
-int str_view_cmp (const struct str_view *sv1, const struct str_view *sv2);
+int str_view_cmp (const struct str_view sv1, const struct str_view sv2);
 
 __HEADER_ONLY
-int str_view_ncmp (const struct str_view *sv1, const struct str_view *sv2,
+int str_view_ncmp (const struct str_view sv1, const struct str_view sv2,
                    size_t n);
 
 __HEADER_ONLY
-int str_view_icmp (const struct str_view *sv1, const struct str_view *sv2);
+int str_view_icmp (const struct str_view sv1, const struct str_view sv2);
 
 __HEADER_ONLY
-int str_view_nicmp (const struct str_view *sv1, const struct str_view *sv2,
+int str_view_nicmp (const struct str_view sv1, const struct str_view sv2,
                     size_t n);
 
 // find
@@ -359,33 +359,33 @@ str_view_substr (struct str_view *src, struct str_view *dst, size_t start,
 }
 
 __HEADER_ONLY int
-str_view_cmp (const struct str_view *sv1, const struct str_view *sv2) {
-  if (sv1->len != sv2->len)
+str_view_cmp (const struct str_view sv1, const struct str_view sv2) {
+  if (sv1.len != sv2.len)
     return -1;
-  return strncmp (sv1->str, sv2->str, sv1->len);
+  return strncmp (sv1.str, sv2.str, sv1.len);
 }
 
 __HEADER_ONLY int
-str_view_ncmp (const struct str_view *sv1, const struct str_view *sv2,
+str_view_ncmp (const struct str_view sv1, const struct str_view sv2,
                size_t n) {
-  if (n > sv1->len || n > sv2->len)
+  if (n > sv1.len || n > sv2.len)
     return -1;
-  return strncmp (sv1->str, sv2->str, n);
+  return strncmp (sv1.str, sv2.str, n);
 }
 
 __HEADER_ONLY int
-str_view_icmp (const struct str_view *sv1, const struct str_view *sv2) {
-  if (sv1->len != sv2->len)
+str_view_icmp (const struct str_view sv1, const struct str_view sv2) {
+  if (sv1.len != sv2.len)
     return -1;
-  return strnicmp (sv1->str, sv2->str, sv1->len);
+  return strnicmp (sv1.str, sv2.str, sv1.len);
 }
 
 __HEADER_ONLY int
-str_view_nicmp (const struct str_view *sv1, const struct str_view *sv2,
+str_view_nicmp (const struct str_view sv1, const struct str_view sv2,
                 size_t n) {
-  if (n > sv1->len || n > sv2->len)
+  if (n > sv1.len || n > sv2.len)
     return -1;
-  return strnicmp (sv1->str, sv2->str, n);
+  return strnicmp (sv1.str, sv2.str, n);
 }
 
 __HEADER_ONLY int
@@ -405,7 +405,7 @@ str_view_findsv (const struct str_view *sv, const struct str_view *sv2) {
 
   for (size_t i = 0; i < sv->len; i++) {
     if (sv->str[i] == sv2->str[0]) {
-      if (str_view_nicmp (sv + i, sv2, sv2->len) == 0)
+      if (str_view_nicmp (*(sv + i), *sv2, sv2->len) == 0)
         return i;
     }
   }

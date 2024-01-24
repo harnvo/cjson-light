@@ -333,9 +333,9 @@ json_obj_asbool (struct json_obj *obj) {
   if (json_obj_is_boolean (obj)) {
     return 0;
   } else if (obj->type & JSON_TYPE_STR) {
-    if (str_view_cmp (&obj->value.str, &__json_keyword_true) == 0) {
+    if (str_view_cmp (obj->value.str, __json_keyword_true) == 0) {
       obj->value.boolean = 1;
-    } else if (str_view_cmp (&obj->value.str, &__json_keyword_false) == 0) {
+    } else if (str_view_cmp (obj->value.str, __json_keyword_false) == 0) {
       obj->value.boolean = 0;
 
     } else {

@@ -175,8 +175,6 @@ json_print (const struct json *json, int flags) {
 }
 
 /* --- list storage --- */
-typedef struct json_list_storage json_list_storage_t;
-
 int json_list_storage_init (struct json *json);
                             
 // void json_list_storage_destroy (struct json *json);
