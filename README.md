@@ -3,7 +3,7 @@
 A lightweight, modular, fast, and easy-to-use JSON library in c.
 
 ## Key features
-[spotlights](#key-features) | [easy-to-use](#usage) | [fast](#benchmark) | [lightweight](#lightweight)
+[spotlights](#spotlights) | [easy-to-use](#usage) | [fast](#benchmark) | [lightweight](#lightweight)
 
 ## Getting started
 
