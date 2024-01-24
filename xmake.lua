@@ -14,6 +14,12 @@ target("src")
         if is_plat("linux") then
             add_cxflags("-fsanitize=address")
             add_ldflags("-fsanitize=address")
+
+            add_cxflags("-fsanitize=undefined")
+            add_ldflags("-fsanitize=undefined")
+
+            add_cxflags("-fsanitize=leak")
+            add_ldflags("-fsanitize=leak")
         end
     else
         add_cxflags("-O3")
@@ -23,12 +29,17 @@ target("src")
     add_files("src/str_view.c")
     add_files("src/json_parser.c")
     add_files("src/json_obj.c")
-    add_files("src/json_store.c")
+    add_files("src/json_list.c")
+    add_files("src/json_array.c")
 
     -- target dir
     set_targetdir("$(buildir)/$(mode)")
     -- name
-    set_basename("json-c")
+    if is_mode("debug") then
+        set_basename("json-debug")
+    else
+        set_basename("json-c")
+    end
 
 --
 -- If you want to known more usage about xmake, please see https://xmake.io

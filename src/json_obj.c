@@ -6,6 +6,7 @@ __EXPOSED int
 json_obj_destroy (struct json_obj *obj) {
   if (json_obj_has_children (obj)) {
     json_destroy (obj->value.object);
+    json_global_hooks.free_fn (obj->value.object);
     obj->value.object = NULL;
   }
 
@@ -39,11 +40,11 @@ __change_line (int flag, int __cur_depth) {
 }
 
 __EXPOSED void
-__json_obj_print (struct  json_obj *obj, int flag, int __cur_depth) {
+__json_obj_print (struct json_obj *obj, int flag, int __cur_depth) {
   __change_line (flag, __cur_depth);
   // print key?
   if (obj->key.str != NULL) {
-    printf ("\"%.*s\":", (int) obj->key.len, obj->key.str);
+    printf ("\"%.*s\":", (int)obj->key.len, obj->key.str);
   }
 
   if (obj->type & JSON_TYPE_OBJECT) {
@@ -55,10 +56,8 @@ __json_obj_print (struct  json_obj *obj, int flag, int __cur_depth) {
       return;
     }
 
-    for (struct json_obj *cur = json_begin (json); 
-         cur != json_end (json); 
-         cur = json_next (json, cur)) 
-    {
+    for (struct json_obj *cur = json_begin (json); cur != json_end (json);
+         cur = json_next (json, cur)) {
       __json_obj_print (cur, flag, __cur_depth + 1);
       if (json_next (json, cur)) {
         printf (",");
@@ -69,11 +68,9 @@ __json_obj_print (struct  json_obj *obj, int flag, int __cur_depth) {
   } else if (obj->type & JSON_TYPE_ARRAY) {
     printf ("[");
     struct json *json = obj->value.array;
-    
-    for (struct json_obj *cur = json_begin (json); 
-         cur != json_end (json); 
-         cur = json_next (json, cur)) 
-    {
+
+    for (struct json_obj *cur = json_begin (json); cur != json_end (json);
+         cur = json_next (json, cur)) {
       __json_obj_print (cur, flag, __cur_depth + 1);
       if (json_next (json, cur)) {
         printf (",");
@@ -81,7 +78,7 @@ __json_obj_print (struct  json_obj *obj, int flag, int __cur_depth) {
     }
     printf ("]");
   } else if (obj->type & JSON_TYPE_STR) {
-    printf ("\"%.*s\"", (int) obj->value.str.len, obj->value.str.str);
+    printf ("\"%.*s\"", (int)obj->value.str.len, obj->value.str.str);
   } else if (obj->type & JSON_TYPE_LZ_STR) {
     printf ("\"%s\"", obj->value.lz_str);
   } else if (obj->type & JSON_TYPE_FLOAT) {
@@ -94,8 +91,8 @@ __json_obj_print (struct  json_obj *obj, int flag, int __cur_depth) {
     }
   } else if (obj->type & JSON_TYPE_NULL) {
     printf ("null");
-  // } else if (obj->type & JSON_TYPE_RAW) {
-  //   printf ("%.*s", (int) obj->value.str.len, obj->value.str.str);
+    // } else if (obj->type & JSON_TYPE_RAW) {
+    //   printf ("%.*s", (int) obj->value.str.len, obj->value.str.str);
   }
 }
 
@@ -103,17 +100,18 @@ __json_obj_print (struct  json_obj *obj, int flag, int __cur_depth) {
 /* All string setters with:
  * 1. const char *str input would try to make a copy of the string.
  *    - If the string is short enough obj value, it would be a lazy string.
- *    If the string is long, it would be a normal string, and the json object would be the owner.
- * 
+ *    If the string is long, it would be a normal string, and the json object
+ * would be the owner.
+ *
  * 2. str_view_t view input would not make a copy of the string.
  *   The json object would never be the owner of the string.
-*/
+ */
 
 // utils
 __HIDDEN int
 __json_obj_check_destroy_value_str (struct json_obj *obj) {
   // check if the value is a string
-  if (!(obj->type & JSON_TYPE_STR))  {
+  if (!(obj->type & JSON_TYPE_STR)) {
     return 0;
   }
 
@@ -127,7 +125,7 @@ __json_obj_check_destroy_value_str (struct json_obj *obj) {
     json_global_hooks.free_fn (obj->__source);
     obj->__source = NULL;
     obj->__source_len = 0;
-    obj->type &= ~ (__JSON_OWNS_SOURCE | JSON_TYPE_STR);
+    obj->type &= ~(__JSON_OWNS_SOURCE | JSON_TYPE_STR);
   }
 
   return 0;
@@ -146,7 +144,7 @@ __json_obj_set_type (struct json_obj *obj, int type) {
 }
 
 /* set key name
-*/
+ */
 __EXPOSED int
 json_obj_set_key (struct json_obj *obj, const char *key) {
   // allows null key
@@ -157,13 +155,14 @@ json_obj_set_key (struct json_obj *obj, const char *key) {
     return 0;
   }
 
-  if (json_obj_owns_value(obj)) {
+  if (json_obj_owns_value (obj)) {
     debug_print ("obj=%p, source=%s\n", obj, obj->__source);
     // check if there is still enough room for the key
     if (strlen (key) + obj->value.str.len + 1 > obj->__source_len) {
       // not enough room
       // make a copy
-      char *tmp = json_global_hooks.malloc_fn (strlen (key) + obj->value.str.len + 1);
+      char *tmp = json_global_hooks.malloc_fn (strlen (key)
+                                               + obj->value.str.len + 1);
       debug_print ("malloced source for %s\n", key);
       if (tmp == NULL) {
         return -1;
@@ -178,7 +177,8 @@ json_obj_set_key (struct json_obj *obj, const char *key) {
       // obj->type |= __JSON_OWNS_SOURCE; // lol, already a source owner
     } else {
       // enough room, move the value to the end
-      memmove (obj->__source + strlen (key), obj->value.str.str, obj->value.str.len);
+      memmove (obj->__source + strlen (key), obj->value.str.str,
+               obj->value.str.len);
       strncpy (obj->__source, key, strlen (key));
       // obj->type |= __JSON_OWNS_SOURCE; // lol, already a source owner
     }
@@ -187,7 +187,7 @@ json_obj_set_key (struct json_obj *obj, const char *key) {
     return 0;
   }
 
-  if (json_obj_owns_key(obj) && obj->__source_len>=strlen(key)) {
+  if (json_obj_owns_key (obj) && obj->__source_len >= strlen (key)) {
     // enough room, just copy
     strncpy (obj->__source, key, strlen (key));
     obj->key.str = obj->__source;
@@ -196,7 +196,7 @@ json_obj_set_key (struct json_obj *obj, const char *key) {
   }
 
   // not enough room, make a copy
-  if (json_obj_owns_key(obj)) {
+  if (json_obj_owns_key (obj)) {
     debug_print ("freed source=%s\n", obj->__source);
     json_global_hooks.free_fn (obj->__source);
     obj->__source = NULL;
@@ -231,10 +231,9 @@ json_obj_set_key_by_view (struct json_obj *obj, str_view_t view) {
     obj->__source_len = 0;
     obj->type &= ~__JSON_OWNS_SOURCE;
   }
- 
+
   return 0;
 }
-
 
 __EXPOSED int
 json_obj_set_null (struct json_obj *obj) {
@@ -259,7 +258,6 @@ json_obj_set_number (struct json_obj *obj, double number) {
   __json_obj_check_destroy_value_str (obj);
   __json_obj_set_type (obj, JSON_TYPE_FLOAT);
 
-  
   obj->value.number = number;
   return 0;
 }
@@ -274,16 +272,15 @@ json_obj_set_boolean (struct json_obj *obj, int boolean) {
   __json_obj_check_destroy_value_str (obj);
   __json_obj_set_type (obj, JSON_TYPE_BOOLEAN);
 
-  obj->value.boolean = boolean>0?1:0;
+  obj->value.boolean = boolean > 0 ? 1 : 0;
   return 0;
 }
-
 
 /* set the source string as the value of the json object
  * this function would make a string copy and take ownership of the copy.
  * Short enough string would be lazy string, and does not have the ownership.
  * If you do not want to make a copy, use json_obj_set_str_by_view instead.
-*/
+ */
 __EXPOSED int
 json_obj_set_str (struct json_obj *obj, const char *str) {
   if (str == NULL) {
@@ -291,7 +288,7 @@ json_obj_set_str (struct json_obj *obj, const char *str) {
   }
 
   int be_lazy_str = 0;
-  if (strlen(str)<=__JSON_OBJ_LZ_STR_LEN) {
+  if (strlen (str) <= __JSON_OBJ_LZ_STR_LEN) {
     be_lazy_str = 1;
   }
 
@@ -299,7 +296,7 @@ json_obj_set_str (struct json_obj *obj, const char *str) {
     json_destroy (obj->value.object);
     obj->value.object = NULL;
   }
-  
+
   if (be_lazy_str) {
     __json_obj_check_destroy_value_str (obj);
     __json_obj_set_type (obj, JSON_TYPE_LZ_STR);
@@ -350,7 +347,7 @@ json_obj_set_str (struct json_obj *obj, const char *str) {
   obj->__source_len = strlen (str) + 1;
 
   __json_obj_set_type (obj, JSON_TYPE_STR | __JSON_OWNS_SOURCE);
-  
+
   str_view_init (&obj->value.str, obj->__source, obj->__source_len - 1);
   return 0;
 }
@@ -366,10 +363,9 @@ json_obj_set_str_by_view (struct json_obj *obj, const str_view_t view) {
   }
 
   __json_obj_check_destroy_value_str (obj);
-  __json_obj_set_type (obj, JSON_TYPE_STR);
+  __json_obj_set_type (obj, JSON_YPE_STR);
 
   obj->value.str = view;
-
 
   return 0;
 }
@@ -395,7 +391,6 @@ json_obj_get_value_str (struct json_obj *obj) {
     view.str = obj->value.lz_str;
     view.len = strlen (obj->value.lz_str);
     return view;
-
   } else {
     str_view_t view;
     view.str = NULL;

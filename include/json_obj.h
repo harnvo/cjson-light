@@ -1,8 +1,8 @@
 #pragma once
 #include "__debug_tool.h"
+#include "json_parser.h"
 #include "shared.h"
 #include "str_view.h"
-#include "json_parser.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,7 +18,7 @@ static const str_view_t __json_keyword_false = { "false", 5 };
 
 // json
 enum json_type {
-  JSON_TYPE_NULL = 1<<0,
+  JSON_TYPE_NULL = 1 << 0,
   JSON_TYPE_OBJECT = 1 << 1,
   JSON_TYPE_ARRAY = 1 << 2,
 
@@ -69,7 +69,8 @@ __HEADER_ONLY char *json_obj_get_type (struct json_obj *obj);
 
 __HEADER_ONLY int json_obj_init (struct json_obj *obj, const char *raw_str);
 
-__HEADER_ONLY int json_obj_init_view (struct json_obj *obj, str_view_t raw_str);
+__HEADER_ONLY int json_obj_init_view (struct json_obj *obj,
+                                      str_view_t raw_str);
 
 int json_obj_destroy (struct json_obj *obj);
 
@@ -105,8 +106,7 @@ int json_obj_set_null (struct json_obj *obj);
 int json_obj_set_number (struct json_obj *obj, double number);
 int json_obj_set_boolean (struct json_obj *obj, int boolean);
 int json_obj_set_str (struct json_obj *obj, const char *str);
-int json_obj_set_str_by_view (struct json_obj *obj,
-                                            str_view_t str);
+int json_obj_set_str_by_view (struct json_obj *obj, str_view_t str);
 
 str_view_t json_obj_get_key (struct json_obj *obj);
 int json_obj_get_key_len (struct json_obj *obj);
@@ -122,21 +122,21 @@ struct json *json_obj_get_value_array (struct json_obj *obj);
 size_t json_obj_get_value_array_len (struct json_obj *obj);
 
 // TOOD: unimplemented
-void __json_obj_print (struct  json_obj *obj, int flag, int __cur_depth);
+void __json_obj_print (struct json_obj *obj, int flag, int __cur_depth);
 
 __HEADER_ONLY char *
 json_obj_get_type (struct json_obj *obj) {
-  if (json_obj_is_array(obj)) {
+  if (json_obj_is_array (obj)) {
     return "array";
-  } else if (json_obj_is_object(obj)) {
+  } else if (json_obj_is_object (obj)) {
     return "object";
-  } else if (json_obj_is_str(obj)) {
+  } else if (json_obj_is_str (obj)) {
     return "string";
-  } else if (json_obj_is_number(obj)) {
+  } else if (json_obj_is_number (obj)) {
     return "number";
-  } else if (json_obj_is_boolean(obj)) {
+  } else if (json_obj_is_boolean (obj)) {
     return "boolean";
-  } else if (json_obj_is_null(obj)) {
+  } else if (json_obj_is_null (obj)) {
     return "null";
   } else {
     return "unknown";
@@ -153,33 +153,15 @@ json_obj_init (struct json_obj *obj, const char *raw_str) {
     return 0;
   }
 
-  int ret = __json_obj_parse(obj, raw_str, strlen(raw_str), 0);
-  if (ret < 0) {
-    return ret;
-  }
-
-  // if (_take_ownership) {
-  //   obj->type |= __JSON_OWNS_SOURCE;
-  //   obj->__source = (char *)raw_str;
-  //   obj->__source_len = strlen (raw_str);
-  // }
-
-  return ret;
+  char *end = __json_obj_parse (obj, raw_str, strlen (raw_str), 0);
+  return (end == NULL) ? -1 : 0;
 }
 
 __EXPOSED __HEADER_ONLY int
 json_obj_init_view (struct json_obj *obj, str_view_t raw_str) {
-  int ret = __json_obj_parse(obj, raw_str.str, raw_str.len, 0);
-  if (ret < 0) {
-    return ret;
-  }
+  char *end = __json_obj_parse (obj, raw_str.str, raw_str.len, 0);
 
-  // if (_take_ownership) {
-  //   obj->type |= __JSON_OWNS_SOURCE;
-  //   obj->__source = (char *)raw_str.str;
-  //   obj->__source_len = raw_str.len;
-  // }
-  return ret;
+  return (end == NULL) ? -1 : 0;
 }
 
 /* -- very basic utils -- */
@@ -194,10 +176,6 @@ json_obj_owns_key (struct json_obj *obj) {
   if (!json_obj_owns_source (obj)) {
     return 0;
   }
-
-  // if (!(obj->type & JSON_TYPE_STR)) {
-  //   return 0;
-  // }
 
   // check ownership. See if the key is is within the source string.
   if (obj->key.str >= obj->__source
@@ -229,10 +207,11 @@ json_obj_owns_value (struct json_obj *obj) {
 
 __EXPOSED __HEADER_ONLY int
 json_obj_take_ownership (struct json_obj *obj, char *source, size_t len) {
-  static char* err = "Cannot take ownership: \
+  static char *err = "Cannot take ownership: \
 json_obj is already a owner! the json_obj have to yield ownership before owning a source string.";
   if (json_obj_owns_source (obj)) {
-    char *source = __FILE__; int line = __LINE__;
+    char *source = __FILE__;
+    int line = __LINE__;
     // lock
     _lock (&global_json_error.lock);
     global_json_error.text = err;
@@ -378,12 +357,12 @@ json_obj_asstr (struct json_obj *obj) {
     } else {
       obj->value.str = __json_keyword_false;
     }
-    debug_assert (!json_obj_owns_source (obj));    
+    debug_assert (!json_obj_owns_source (obj));
 
     obj->type &= ~JSON_TYPE_BOOLEAN;
     obj->type |= JSON_TYPE_STR;
 
-    debug_assert (!json_obj_owns_source (obj));    
+    debug_assert (!json_obj_owns_source (obj));
   } else if (json_obj_is_number (obj)) {
     // to lazy string
     sprintf (obj->value.lz_str, "%f", obj->value.number);
@@ -422,7 +401,8 @@ json_obj_tonum (struct json_obj *obj, double *dst) {
 __EXPOSED __HEADER_ONLY int
 json_obj_tostr (struct json_obj *obj, char **dst, size_t *dst_len) {
   if (obj->type & JSON_TYPE_LZ_STR) {
-    *dst = (char *)json_global_hooks.malloc_fn (strlen (obj->value.lz_str) + 1);
+    *dst
+        = (char *)json_global_hooks.malloc_fn (strlen (obj->value.lz_str) + 1);
     if (*dst == NULL) {
       return -1;
     }
@@ -453,7 +433,8 @@ json_obj_tostr (struct json_obj *obj, char **dst, size_t *dst_len) {
       (*dst)[__json_keyword_true.len] = '\0';
       *dst_len = __json_keyword_true.len;
     } else {
-      *dst = (char *)json_global_hooks.malloc_fn (__json_keyword_false.len + 1);
+      *dst
+          = (char *)json_global_hooks.malloc_fn (__json_keyword_false.len + 1);
       if (*dst == NULL) {
         return -1;
       }

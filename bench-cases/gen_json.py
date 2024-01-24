@@ -64,9 +64,11 @@ with open('big.json', 'w') as f:
 json_data = {}
 _tmp = json_data
 for i in range(100):
-    _key = f"k{i}"
-    _tmp[_key] = {}
-    _tmp = _tmp[_key]
+    _key1 = f"k1{i}"
+    _key2 = f"k2{i}"
+    _tmp[_key1] = {}
+    _tmp[_key2] = []
+    _tmp = _tmp[_key1]
     
 with open('nested-obj.json', 'w') as f:
     json.dump(json_data, f)
@@ -78,6 +80,7 @@ with open('nested-obj.json', 'w') as f:
 json_data = ["root"]
 _tmp = json_data
 for i in range(100):
+    _tmp.append([])
     _tmp.append([])
     _tmp = _tmp[-1]
     

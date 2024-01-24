@@ -15,7 +15,8 @@
 #endif
 
 // macro for visibility
-#if ( (defined(__GNUC__) &&__GNUC__>=4 ) || defined(__SUNPRO_CC) || defined(__SUNPRO_C))
+#if ((defined(__GNUC__) && __GNUC__ >= 4) || defined(__SUNPRO_CC)             \
+     || defined(__SUNPRO_C))
 #define __HIDDEN __attribute__ ((visibility ("hidden")))
 #define __EXPOSED __attribute__ ((visibility ("default")))
 #else
@@ -25,12 +26,12 @@
 
 // cross patform
 
-
 // nan and inf
 /* https://github.com/DaveGamble/cJSON/blob/master/cJSON.c#L72 */
-/* define isnan and isinf for ANSI C, if in C99 or above, isnan and isinf has been defined in math.h */
+/* define isnan and isinf for ANSI C, if in C99 or above, isnan and isinf has
+ * been defined in math.h */
 #ifndef isinf
-#define isinf(d) (isnan((d - d)) && !isnan(d))
+#define isinf(d) (isnan ((d - d)) && !isnan (d))
 #endif
 #ifndef isnan
 #define isnan(d) (d != d)
@@ -38,9 +39,9 @@
 
 #ifndef _json_num_nan
 #ifdef _WIN32
-#define _json_num_nan sqrt(-1.0)
+#define _json_num_nan sqrt (-1.0)
 #else
-#define _json_num_nan 0.0/0.0
+#define _json_num_nan 0.0 / 0.0
 #endif
 #endif
 
@@ -71,19 +72,16 @@
 #error "Unsupported platform"
 #endif
 
-#define unlikely(x) __builtin_expect(!!(x), 0)
-#define likely(x) __builtin_expect(!!(x), 1)
-
+#define unlikely(x) __builtin_expect (!!(x), 0)
+#define likely(x) __builtin_expect (!!(x), 1)
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
 // some global hooks
-// need to used with lock
 
-// there is one more concern: might not work when json_err is written by
-// another thread immediately after the lock released.
+// need to used with lock
 struct json_err {
   int line;
   int column;
@@ -98,9 +96,7 @@ static thread_local struct json_err global_json_error;
 
 static void
 json_err_print (struct json_err *err) {
-  fprintf (stderr,
-           "Error at line %d, column %d\n",
-           err->line, err->column);
+  fprintf (stderr, "Error at line %d, column %d\n", err->line, err->column);
   fprintf (stderr, "Source: %s\n", err->source);
   if (err->text) {
     fprintf (stderr, "Text: %s\n", err->text);
@@ -116,7 +112,7 @@ json_err_type_not_supported (int line, int column, int position,
   _lock (&err->lock);
   err->line = line;
   err->column = column;
-  char buf[sizeof(err_msg)+sizeof(type)];
+  char buf[sizeof (err_msg) + sizeof (type)];
   sprintf (buf, err_msg, type);
   err->source = buf;
   json_err_print (err);
@@ -134,13 +130,14 @@ struct global_hooks {
   json_free_t free_fn;
 }
 
-static json_global_hooks = {malloc, free};
+static json_global_hooks
+    = { malloc, free };
 
 #define INIT_JSON_MALLOC(malloc_fx, free_fx)                                  \
-  do {                                                                         \
+  do {                                                                        \
     json_global_hooks.malloc_fn = malloc_fx;                                  \
     json_global_hooks.free_fn = free_fx;                                      \
-    json_default_malloc = 0;                                                   \
+    json_default_malloc = 0;                                                  \
   } while (0)
 
 #if defined(__cplusplus)
@@ -155,5 +152,3 @@ static json_global_hooks = {malloc, free};
 template <typename _Tp> class json_allocator : public std::allocator<_Tp> {};
 
 #endif
-
-

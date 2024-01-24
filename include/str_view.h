@@ -17,12 +17,10 @@ __HEADER_ONLY
 char *
 strskip (const char *str, size_t __max_len) {
   while (*str && __max_len) {
-    if (isspace (*str) || *str == '\n' || *str == '\r' || *str == '\t')
-      {
-        str++;
-        __max_len--;
-      }
-    else
+    if (isspace (*str) || *str == '\n' || *str == '\r' || *str == '\t') {
+      str++;
+      __max_len--;
+    } else
       break;
   }
 
@@ -159,7 +157,6 @@ int str_view_toi (const struct str_view *sv, int *out);
 // __HEADER_ONLY
 // int str_view_tof (const struct str_view *sv, float *out);
 
-
 /* ----------------------------------------------- */
 
 /* ----------------------- */
@@ -194,94 +191,101 @@ str_view_print (const struct str_view *sv) {
 // see `json_obj_parse_str`
 __HIDDEN __HEADER_ONLY int
 __sv_parse_str_loop (char **ch_ptr, int *ctx) {
-	const static int CTX_backslash = 1 << 0;
+  const static int CTX_backslash = 1 << 0;
   const static int CTX_unicode = 1 << 1;
 
   char *ch = *ch_ptr;
-	// check for context
-	if (*ctx & CTX_backslash) {
-		switch (*ch) {
-      case '\"': case '\\': case '/': case 'b':
-      case 'f':  case 'n':  case 'r': case 't': {
-        *ctx &= ~CTX_backslash;
-        break;
-      } case 'u': {
-        *ctx &= ~CTX_backslash;
-        *ctx |= CTX_unicode;
-        break;
-      } default: {
-        return -1;
-      }
-		}
+  // check for context
+  if (*ctx & CTX_backslash) {
+    switch (*ch) {
+    case '\"':
+    case '\\':
+    case '/':
+    case 'b':
+    case 'f':
+    case 'n':
+    case 'r':
+    case 't': {
+      *ctx &= ~CTX_backslash;
+      break;
+    }
+    case 'u': {
+      *ctx &= ~CTX_backslash;
+      *ctx |= CTX_unicode;
+      break;
+    }
+    default: {
+      return -1;
+    }
+    }
     // ch++;
     *ch_ptr += 1;
-		return 0;
-	}
+    return 0;
+  }
 
-	if (*ctx & CTX_unicode) {
-		for (int i = 0; i < 4; i++) {
-			if (!isxdigit(*ch)) {
-        printf("error: %c\n", *ch);
-				return -1;
-			}
-			ch++;
+  if (*ctx & CTX_unicode) {
+    for (int i = 0; i < 4; i++) {
+      if (!isxdigit (*ch)) {
+        printf ("error: %c\n", *ch);
+        return -1;
+      }
+      ch++;
       *ch_ptr += 1;
-		}
+    }
     *ctx &= ~CTX_unicode;
-		return 0;
-	}
+    return 0;
+  }
 
-	// normal context
-	// deal with backslash
-	if (*ch == '\\') {
-		// ch++;
+  // normal context
+  // deal with backslash
+  if (*ch == '\\') {
+    // ch++;
     *ch_ptr += 1;
-		*ctx |= CTX_backslash;
-		return 0;
-	}
+    *ctx |= CTX_backslash;
+    return 0;
+  }
 
-	if (*ch == '\"') {
-		return 1;
-	}
+  if (*ch == '\"') {
+    return 1;
+  }
   // ch++;
   *ch_ptr += 1;
-
 }
 
 // do the parsing assuming the first char is '\"'
 __EXPOSED __HEADER_ONLY int
 __str_view_parse_str (str_view_t *dst, str_view_t src) {
-	if (src.len == 0) {
-		return -1;
-	}
+  if (src.len == 0) {
+    return -1;
+  }
 
-	char *ch = src.str;
-	char *ch_end = ch + src.len - 1;
+  char *ch = src.str;
+  char *ch_end = ch + src.len - 1;
 
-	// assume the first char is '\"'
-	ch++;
+  // assume the first char is '\"'
+  ch++;
   dst->str = ch;
 
-	int __ctx = 0;
-	while ((*ch != '\0' && *ch != '\r' && *ch != '\n'
-         && *ch != *ch_end) || __ctx != 0) {
-		/* code */
-		int flag = __sv_parse_str_loop (&ch, &__ctx);
-    
-		if (flag == -1) {
-			return -1;
-		}
+  int __ctx = 0;
+  while ((*ch != '\0' && *ch != '\r' && *ch != '\n' && *ch != *ch_end)
+         || __ctx != 0) {
+    /* code */
+    int flag = __sv_parse_str_loop (&ch, &__ctx);
 
-		if (flag == 1) {
-			break;
-		}
-	}
+    if (flag == -1) {
+      return -1;
+    }
 
-	if (*ch != '\"') {
-		return -1;
-	}
-	
-	dst->len = ch - dst->str;
+    if (flag == 1) {
+      break;
+    }
+  }
+
+  if (*ch != '\"') {
+    return -1;
+  }
+
+  dst->len = ch - dst->str;
   if (dst->len == 0) {
     return -1;
   }

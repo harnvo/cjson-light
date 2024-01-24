@@ -1,8 +1,8 @@
 #pragma once
 
+#include "json_obj.h"
 #include "shared.h"
 #include "str_view.h"
-#include "json_obj.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,7 +33,7 @@ struct _json_op {
   struct json_obj *(*next) (const struct json *json, struct json_obj *obj);
   struct json_obj *(*end) (const struct json *json);
 
-  /* extra op for internal use. 
+  /* extra op for internal use.
    * If you want to use it, you should know what you are doing.
    * currently unused.
    */
@@ -58,16 +58,15 @@ typedef struct json_list_storage {
 } json_list_storage_t;
 
 typedef struct json_array_storage {
-  struct json_obj *objs;
-  size_t size;
-  size_t capacity;
+  struct json_obj *beg;
+  struct json_obj *end;
+  struct json_obj *end_of_storage;
 } json_array_storage_t;
 
 struct json_hash_table_bucket;
 typedef struct json_hash_table_storage {
   int num_buckets; // bucket is not gonna be that big, right..?
   size_t num_elements;
-
 
   struct json_hash_table_bucket *buckets;
 
@@ -87,7 +86,7 @@ struct json {
 
 __EXPOSED __HEADER_ONLY int
 json_add (struct json *json, struct json_obj *obj) {
-  return json->_op->add(json, obj);
+  return json->_op->add (json, obj);
 }
 
 __EXPOSED __HEADER_ONLY struct json_obj *
@@ -98,7 +97,7 @@ _json_add_empty (struct json *json, str_view_t *key) {
 __EXPOSED __HEADER_ONLY int
 json_remove (struct json *json, const char *key) {
   // make a str_view_t
-  str_view_t _view = { (char*) key, strlen (key) };
+  str_view_t _view = { (char *)key, strlen (key) };
   return json->_op->remove_by_key (json, &_view);
 }
 
@@ -115,7 +114,7 @@ json_remove_by_index (struct json *json, size_t index) {
 __EXPOSED __HEADER_ONLY struct json_obj *
 json_get (struct json *json, const char *key) {
   // make a str_view_t
-  str_view_t _view = { (char*) key, strlen (key) };
+  str_view_t _view = { (char *)key, strlen (key) };
   return json->_op->get_by_key (json, &_view);
 }
 
@@ -176,7 +175,9 @@ json_print (const struct json *json, int flags) {
 
 /* --- list storage --- */
 int json_list_storage_init (struct json *json);
-                            
+
+int json_array_storage_init (struct json *json, int __default_size);
+
 // void json_list_storage_destroy (struct json *json);
 
 #if defined(__cplusplus)
