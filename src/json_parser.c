@@ -243,8 +243,8 @@ json_value_parse (struct json_obj *target, const char *source, size_t length,
 /* the core parser.
  *
  * returns:
- *   -1: error
- *  otherwise: the offset
+ *   NULL: error
+ *  otherwise: the rest of the string
  */
 __HIDDEN char *
 __json_parse (struct json *target, const char *source, size_t length,

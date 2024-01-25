@@ -239,5 +239,3 @@ json_array_storage_end (const struct json *json) {
       = (json_array_storage_t *)&json->_storage.array;
   return storage->end;
 }
-
-/* ---------------------- */

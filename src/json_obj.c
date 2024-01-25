@@ -1,6 +1,192 @@
 #include "json_obj.h"
 #include "json_store.h"
 
+/* --- basic type convertions --- */
+__EXPOSED int
+json_obj_asnum (struct json_obj *obj) {
+  // supports: number, str, lz_str, boolean
+  if (json_obj_is_number (obj)) {
+    return 0;
+  } else if (obj->type & JSON_TYPE_STR) {
+    int ret = str_view_toi (&obj->value.str, (int *)&obj->value.number);
+    if (ret < 0) {
+      return -1;
+    }
+  } else if (obj->type & JSON_TYPE_LZ_STR) {
+    stod (obj->value.lz_str, &obj->value.number);
+  } else if (json_obj_is_boolean (obj)) {
+    obj->value.number = (double)obj->value.boolean;
+  } else {
+    return -1;
+  }
+
+  obj->type = JSON_TYPE_FLOAT;
+  return 0;
+}
+
+__EXPOSED int
+json_obj_asbool (struct json_obj *obj) {
+  // supports: number, str, lz_str, boolean
+  if (json_obj_is_boolean (obj)) {
+    return 0;
+  } else if (obj->type & JSON_TYPE_STR) {
+    if (str_view_cmp (obj->value.str, __json_keyword_true) == 0) {
+      obj->value.boolean = 1;
+    } else if (str_view_cmp (obj->value.str, __json_keyword_false) == 0) {
+      obj->value.boolean = 0;
+
+    } else {
+      return -1;
+    }
+
+    obj->type &= ~JSON_TYPE_STR;
+  } else if (obj->type & JSON_TYPE_LZ_STR) {
+    if (strcmp (obj->value.lz_str, "true") == 0) {
+      obj->value.boolean = 1;
+    } else if (strcmp (obj->value.lz_str, "false") == 0) {
+      obj->value.boolean = 0;
+    } else {
+      return -1;
+    }
+
+    obj->type &= ~JSON_TYPE_LZ_STR;
+  } else if (json_obj_is_number (obj)) {
+    obj->value.boolean = (int)obj->value.number != 0;
+
+    obj->type &= ~JSON_TYPE_FLOAT;
+  } else {
+    return -1;
+  }
+
+  obj->type &= JSON_TYPE_BOOLEAN;
+  return 0;
+}
+
+__EXPOSED int
+json_obj_asstr (struct json_obj *obj) {
+  debug_print ("json_obj type: %s\n", json_obj_get_type (obj));
+
+  // basic supports: number, str, lz_str, boolean
+  if (json_obj_is_str (obj)) {
+    // do nothing
+  } else if (json_obj_is_boolean (obj)) {
+    if (obj->value.boolean) {
+      obj->value.str = __json_keyword_true;
+    } else {
+      obj->value.str = __json_keyword_false;
+    }
+    debug_assert (!json_obj_owns_source (obj));
+
+    obj->type &= ~JSON_TYPE_BOOLEAN;
+    obj->type |= JSON_TYPE_STR;
+
+    debug_assert (!json_obj_owns_source (obj));
+  } else if (json_obj_is_number (obj)) {
+    // to lazy string
+    sprintf (obj->value.lz_str, "%f", obj->value.number);
+
+    obj->type &= ~JSON_TYPE_FLOAT;
+    obj->type &= JSON_TYPE_LZ_STR;
+  }
+
+  else if (json_obj_is_object (obj) || json_obj_is_array (obj)) {
+    // not supported yet
+    // TODO: do we really need this feature?
+    return -1;
+  } else {
+    return -1;
+  }
+
+  return 0;
+}
+
+__EXPOSED int
+json_obj_tonum (struct json_obj *obj, double *dst) {
+  if (json_obj_is_number (obj)) {
+    *dst = obj->value.number;
+    return 0;
+  } else if (json_obj_is_str (obj)) {
+    return str_view_tod (&obj->value.str, dst);
+  } else if (json_obj_is_boolean (obj)) {
+    *dst = (double)obj->value.boolean;
+    return 0;
+  } else {
+    return -1;
+  }
+}
+
+// be careful: memory allocation involved
+__EXPOSED int
+json_obj_tostr (struct json_obj *obj, char **dst, size_t *dst_len) {
+  if (obj->type & JSON_TYPE_LZ_STR) {
+    *dst
+        = (char *)json_global_hooks.malloc_fn (strlen (obj->value.lz_str) + 1);
+    if (*dst == NULL) {
+      return -1;
+    }
+
+    strcpy (*dst, obj->value.lz_str);
+    *dst_len = strlen (*dst);
+
+    return 0;
+  } else if (obj->type & JSON_TYPE_STR) {
+    *dst = (char *)json_global_hooks.malloc_fn (obj->value.str.len + 1);
+    if (*dst == NULL) {
+      return -1;
+    }
+
+    strncpy (*dst, obj->value.str.str, obj->value.str.len);
+    (*dst)[obj->value.str.len] = '\0';
+    *dst_len = obj->value.str.len;
+
+    return 0;
+  } else if (obj->type & JSON_TYPE_BOOLEAN) {
+    if (obj->value.boolean) {
+      *dst = (char *)json_global_hooks.malloc_fn (__json_keyword_true.len + 1);
+      if (*dst == NULL) {
+        return -1;
+      }
+
+      strncpy (*dst, __json_keyword_true.str, __json_keyword_true.len);
+      (*dst)[__json_keyword_true.len] = '\0';
+      *dst_len = __json_keyword_true.len;
+    } else {
+      *dst
+          = (char *)json_global_hooks.malloc_fn (__json_keyword_false.len + 1);
+      if (*dst == NULL) {
+        return -1;
+      }
+
+      strncpy (*dst, __json_keyword_false.str, __json_keyword_false.len);
+      (*dst)[__json_keyword_false.len] = '\0';
+      *dst_len = __json_keyword_false.len;
+    }
+
+    return 0;
+  } else if (obj->type & JSON_TYPE_FLOAT) {
+    *dst = (char *)json_global_hooks.malloc_fn (32);
+    if (*dst == NULL) {
+      return -1;
+    }
+
+    sprintf (*dst, "%f", obj->value.number);
+    *dst_len = strlen (*dst);
+
+    return 0;
+  } else if (obj->type & JSON_TYPE_OBJECT) {
+    // not supported yet
+    return -1;
+  } else if (obj->type & JSON_TYPE_ARRAY) {
+    // not supported yet
+    return -1;
+  } else {
+    // not supported yet
+    return -1;
+  }
+
+  return 0;
+}
+
 // destroy the json object
 __EXPOSED int
 json_obj_destroy (struct json_obj *obj) {
@@ -143,12 +329,10 @@ __json_obj_set_type (struct json_obj *obj, int type) {
   return 0;
 }
 
-/* set key name
- */
+/* set key name */
 __EXPOSED int
 json_obj_set_key (struct json_obj *obj, const char *key) {
-  // allows null key
-  // in this case this becomes an array element
+  // allows null key. In this case this becomes an array element
   if (key == NULL) {
     obj->key.str = NULL;
     obj->key.len = 0;
@@ -156,11 +340,9 @@ json_obj_set_key (struct json_obj *obj, const char *key) {
   }
 
   if (json_obj_owns_value (obj)) {
-    debug_print ("obj=%p, source=%s\n", obj, obj->__source);
     // check if there is still enough room for the key
     if (strlen (key) + obj->value.str.len + 1 > obj->__source_len) {
-      // not enough room
-      // make a copy
+      // not enough room, make a copy
       char *tmp = json_global_hooks.malloc_fn (strlen (key)
                                                + obj->value.str.len + 1);
       debug_print ("malloced source for %s\n", key);
@@ -363,7 +545,7 @@ json_obj_set_str_by_view (struct json_obj *obj, const str_view_t view) {
   }
 
   __json_obj_check_destroy_value_str (obj);
-  __json_obj_set_type (obj, JSON_YPE_STR);
+  __json_obj_set_type (obj, JSON_TYPE_STR);
 
   obj->value.str = view;
 

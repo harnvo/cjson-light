@@ -26,7 +26,7 @@ target("src")
         set_optimize("fastest")
     end
 
-    add_files("src/str_view.c")
+    add_files("src/prints.c")
     add_files("src/json_parser.c")
     add_files("src/json_obj.c")
     add_files("src/json_list.c")

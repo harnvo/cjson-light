@@ -1,6 +1,7 @@
 #pragma once
 
 #include "shared.h"
+#include "str_view.h"
 
 #if defined(__cplusplus)
 extern "C" {

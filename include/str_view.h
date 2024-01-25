@@ -13,8 +13,7 @@ extern "C" {
 #endif
 
 /* Before we start, provide some basic cstr utils */
-__HEADER_ONLY
-char *
+__HEADER_ONLY char *
 strskip (const char *str, size_t __max_len) {
   while (*str && __max_len) {
     if (isspace (*str) || *str == '\n' || *str == '\r' || *str == '\t') {
@@ -27,8 +26,7 @@ strskip (const char *str, size_t __max_len) {
   return (char *)str;
 }
 
-__HEADER_ONLY
-int
+__HEADER_ONLY int
 stricmp (const char *s1, const char *s2) {
   while (*s1 && *s2) {
     int diff = tolower (*s1) - tolower (*s2);
@@ -41,8 +39,7 @@ stricmp (const char *s1, const char *s2) {
   return *s1 - *s2;
 }
 
-__HEADER_ONLY
-int
+__HEADER_ONLY int
 strnicmp (const char *s1, const char *s2, size_t n) {
   while (*s1 && *s2 && n) {
     int diff = tolower (*s1) - tolower (*s2);
@@ -56,20 +53,17 @@ strnicmp (const char *s1, const char *s2, size_t n) {
   return *s1 - *s2;
 }
 
-__HEADER_ONLY
-int
+__HEADER_ONLY int
 stoi (const char *str, int *out) {
   return sscanf (str, "%d", out);
 }
 
-__HEADER_ONLY
-int
+__HEADER_ONLY int
 stof (const char *str, float *out) {
   return sscanf (str, "%f", out);
 }
 
-__HEADER_ONLY
-int
+__HEADER_ONLY int
 stod (const char *str, double *out) {
   return sscanf (str, "%lf", out);
 }
@@ -108,7 +102,7 @@ int str_view_print (const struct str_view *sv);
 
 // parser. VERY USEFUL
 __HEADER_ONLY
-int str_view_parse_str (struct str_view *dst, struct str_view src);
+int __str_view_parse_str (struct str_view *dst, struct str_view src);
 
 // trim. Ignore the space at the beginning and end of the string
 __HEADER_ONLY
@@ -154,8 +148,8 @@ int str_view_findsv (const struct str_view *sv, const struct str_view *sv2);
 __HEADER_ONLY
 int str_view_toi (const struct str_view *sv, int *out);
 
-// __HEADER_ONLY
-// int str_view_tof (const struct str_view *sv, float *out);
+__HEADER_ONLY
+int str_view_tod (const struct str_view *sv, double *out);
 
 /* ----------------------------------------------- */
 
@@ -187,7 +181,7 @@ str_view_print (const struct str_view *sv) {
   return printf ("%.*s", (int)sv->len, sv->str);
 }
 
-// parser. VERY USEFUL
+// parser. VERY USEFUL for parsing strings in json
 // see `json_obj_parse_str`
 __HIDDEN __HEADER_ONLY int
 __sv_parse_str_loop (char **ch_ptr, int *ctx) {
@@ -250,6 +244,7 @@ __sv_parse_str_loop (char **ch_ptr, int *ctx) {
   }
   // ch++;
   *ch_ptr += 1;
+  return 0;
 }
 
 // do the parsing assuming the first char is '\"'
@@ -420,7 +415,6 @@ str_view_findsv (const struct str_view *sv, const struct str_view *sv2) {
 // converters
 __HEADER_ONLY int
 str_view_toi (const struct str_view *sv, int *out) {
-  // trim
   struct str_view tmp = *sv;
 
   // should not use atoi, as we're not sure if the string is null-terminated
@@ -523,7 +517,6 @@ str_view_tod (const struct str_view *sv, double *out) {
     }
 
     if (!isdigit (tmp.str[i]))
-      // return -1;
       break;
 
     int digit = tmp.str[i] - '0';

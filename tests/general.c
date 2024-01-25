@@ -45,9 +45,9 @@ main (void) {
   // open file
   // get reletive path
 
-  FILE *fp = fopen ("../test-cases/test1.json", "r");
+  FILE *fp = fopen ("../test-cases/test_1.json", "r");
   if (fp == NULL) {
-    printf ("error\n");
+    printf ("error: file not found\n");
     return -1;
   }
 
