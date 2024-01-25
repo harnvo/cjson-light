@@ -79,8 +79,12 @@ printf("print str_view_t:%v\n", sv);
 the definition is as follows:
 ```
 struct json {
-  void *storage;
   struct _json_op *_op;
+  union {
+    struct json_list_storage list;
+    struct json_hash_table_storage hash_table;
+    struct json_array_storage array;
+  } _storage;
 };
 ```
 There are some basic operations exposed to users:
@@ -88,13 +92,14 @@ There are some basic operations exposed to users:
 - `json_destroy`: destroy everything within json.
 - `json_add`: add an json_obj into json. memory copy involved.
 - `_json_add_empty`: add an empty json_obj into json, returns the pointer to the obj. Used in case you wanna avoid memory copy.
-- `json_remove_by_key`: remove a json_obj by key (char*).
-- `json_remove_by_key_view`: remove a json_obj by key (str_view_t).
+- `json_remove`: remove a json_obj by key (char*).
+- `json_remove_by_view`: remove a json_obj by key (str_view_t).
 - `json_remove_by_index`: remove a json_obj by index.
-- `json_get_by_key`: get a json_obj by key (char*).
-- `json_get_by_key_view`: get a json_obj by key (str_view_t).
+- `json_get`: get a json_obj by key (char*).
+- `json_get_by_view`: get a json_obj by key (str_view_t).
 - `json_get_by_index`: get a json_obj by index.
 - `json_get_size`: return number of elements within json (non-recursive. i.e. nested json counts as one obj.)
+- `json_is_empty`: check if json is empty.
 - `json_begin`, `json_next`, `json_end`: a iterator for user's convenience. To use it:
   ```
     for (
