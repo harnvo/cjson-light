@@ -246,5 +246,3 @@ Because of the reduced memory allocation, the parsing process is faster than `cJ
 No rigorous benchmark is available yet, but I have done some simple tests on my laptop (AMD Ryzen 7 4800H, Ubuntu 20.04, gcc 9.4.0). 
 
 __Parsing__ is 2-3 times faster when using the same storage type (linked list) as `cJSON`, and 1-2 times faster when using vector storage (slower parsing for faster indexing).
-
-__Getting value__ is up to **20** times faster when using the same storage type (linked list) as `cJSON`.
